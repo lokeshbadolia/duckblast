@@ -1,4 +1,4 @@
-# Duck Blast
+# Duck Blast (Built entire app in one prompt)
 
 ![Duck Blast](duckblast.png)
 
