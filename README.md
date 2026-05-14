@@ -5,7 +5,7 @@
 A retro-style duck-shooting game for Android — a love letter to the NES classic. Built with Jetpack Compose, with procedurally synthesized chiptune audio and no asset dependencies for sounds.
 
 ## Playstore
-![Download App From Playstore](http://play.google.com/store/apps/details?id=com.duckblast.game)
+[Download App From Playstore](http://play.google.com/store/apps/details?id=com.duckblast.game)
 
 ## Highlights
 
