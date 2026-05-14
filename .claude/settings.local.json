@@ -10,7 +10,13 @@
       "Bash(adb devices *)",
       "Bash(adb logcat *)",
       "Bash(./gradlew :app:compileDebugKotlin)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.objectbox.io)",
+      "WebFetch(domain:objectbox.io)",
+      "WebSearch",
+      "Bash(./gradlew :app:assembleDebug)",
+      "Bash(python3 *)"
     ]
   }
 }

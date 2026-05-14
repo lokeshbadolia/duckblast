@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+/signing_keys
+/app/release
