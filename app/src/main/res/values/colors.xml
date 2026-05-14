@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sky -->
+    <color name="sky_top">#5C94FC</color>
+    <color name="sky_bottom">#A8D8EA</color>
+
+    <!-- Ground -->
+    <color name="grass_dark">#009900</color>
+    <color name="grass_light">#00CC00</color>
+    <color name="ground_brown">#884400</color>
+    <color name="bush_green">#006600</color>
+    <color name="tree_dark">#003300</color>
+
+    <!-- Duck palette -->
+    <color name="duck_brown">#884400</color>
+    <color name="duck_green">#007700</color>
+    <color name="duck_white">#FFFFFF</color>
+    <color name="duck_beak">#FFA600</color>
+
+    <!-- Crosshair / HUD -->
+    <color name="crosshair_white">#FFFFFF</color>
+    <color name="crosshair_dark">#000033</color>
+    <color name="hud_bg">#000033</color>
+    <color name="hud_text">#FFFFFF</color>
+    <color name="score_yellow">#FCFC00</color>
+    <color name="hit_flash">#FFFFFF</color>
+
+    <!-- Brand -->
+    <color name="brand_primary">#884400</color>
+    <color name="brand_secondary">#009900</color>
+    <color name="brand_accent">#FCFC00</color>
+    <color name="brand_red">#D03030</color>
+    <color name="brand_text_dark">#000033</color>
+    <color name="brand_surface">#FFFFFF</color>
+</resources>

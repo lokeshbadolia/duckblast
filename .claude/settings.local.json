@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x gradlew)",
+      "Bash(./gradlew --version)",
+      "Bash(/usr/libexec/java_home -V)",
+      "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.16/libexec/openjdk.jdk/Contents/Home ./gradlew --stop)",
+      "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.16/libexec/openjdk.jdk/Contents/Home ./gradlew assembleDebug --no-daemon --console=plain)",
+      "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.16/libexec/openjdk.jdk/Contents/Home ./gradlew assembleDebug --console=plain)",
+      "Bash(adb devices *)",
+      "Bash(adb logcat *)",
+      "Bash(./gradlew :app:compileDebugKotlin)",
+      "Bash(echo \"exit: $?\")"
+    ]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:1989751242126997193",
+      "lastPropertyId": "10:5156089319767455082",
+      "name": "GameRecord",
+      "properties": [
+        {
+          "id": "1:1889812361098372903",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3905880284628604256",
+          "name": "profileId",
+          "indexId": "1:9143583456944979124",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "3:1513149551767121891",
+          "name": "score",
+          "type": 6
+        },
+        {
+          "id": "4:5740439975640715062",
+          "name": "levelReached",
+          "type": 5
+        },
+        {
+          "id": "5:3246742711488464025",
+          "name": "ducksHit",
+          "type": 5
+        },
+        {
+          "id": "6:192218667792045230",
+          "name": "shotsFired",
+          "type": 5
+        },
+        {
+          "id": "7:814743401058199791",
+          "name": "accuracy",
+          "type": 7
+        },
+        {
+          "id": "8:5328064803048007754",
+          "name": "playedAt",
+          "type": 6
+        },
+        {
+          "id": "9:8258960653857648744",
+          "name": "durationSeconds",
+          "type": 5
+        },
+        {
+          "id": "10:5156089319767455082",
+          "name": "isPerfectGame",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2769953759832174562",
+      "lastPropertyId": "12:6014281527799620907",
+      "name": "Profile",
+      "properties": [
+        {
+          "id": "1:2099955431579207805",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8396466455810108760",
+          "name": "name",
+          "indexId": "2:1842438385503701335",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:8058243490941095711",
+          "name": "avatarColorHex",
+          "type": 9
+        },
+        {
+          "id": "4:6173223616947026810",
+          "name": "highScore",
+          "type": 6
+        },
+        {
+          "id": "5:1086177382853912007",
+          "name": "totalDucksHit",
+          "type": 5
+        },
+        {
+          "id": "6:2422876512849546165",
+          "name": "totalShotsFired",
+          "type": 5
+        },
+        {
+          "id": "7:679009937189286447",
+          "name": "totalGamesPlayed",
+          "type": 5
+        },
+        {
+          "id": "8:8788830451638285784",
+          "name": "highestLevelReached",
+          "type": 5
+        },
+        {
+          "id": "9:1279439955332126150",
+          "name": "createdAt",
+          "type": 6
+        },
+        {
+          "id": "10:8674801593074413388",
+          "name": "lastPlayedAt",
+          "type": 6
+        },
+        {
+          "id": "11:7819329154508909210",
+          "name": "streakDays",
+          "type": 5
+        },
+        {
+          "id": "12:6014281527799620907",
+          "name": "lastPlayedDate",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "2:2769953759832174562",
+  "lastIndexId": "2:1842438385503701335",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

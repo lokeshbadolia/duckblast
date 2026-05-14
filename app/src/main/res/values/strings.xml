@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Duck Blast</string>
+    <string name="splash_subtitle">A Retro Shooting Tribute</string>
+    <string name="action_play">PLAY</string>
+    <string name="action_multiplayer">MULTIPLAYER</string>
+    <string name="action_scoreboard">SCOREBOARD</string>
+    <string name="action_change_hunter">CHANGE HUNTER</string>
+    <string name="action_new_hunter">NEW HUNTER</string>
+    <string name="action_play_again">PLAY AGAIN</string>
+    <string name="action_main_menu">MAIN MENU</string>
+    <string name="action_share">SHARE</string>
+    <string name="label_select_hunter">SELECT HUNTER</string>
+    <string name="label_hall_of_fame">HALL OF FAME</string>
+    <string name="label_score">SCORE</string>
+    <string name="label_level">LEVEL</string>
+    <string name="label_hi_score">HI-SCORE</string>
+    <string name="label_game_over">GAME OVER</string>
+    <string name="label_new_record">NEW RECORD!</string>
+    <string name="label_your_score">YOUR SCORE</string>
+    <string name="label_best_score">BEST SCORE</string>
+    <string name="label_level_reached">LEVEL REACHED</string>
+    <string name="label_ducks_hit">DUCKS HIT</string>
+    <string name="label_accuracy">ACCURACY</string>
+    <string name="label_hunter_name">HUNTER NAME</string>
+    <string name="label_host_game">HOST GAME</string>
+    <string name="label_join_game">JOIN GAME</string>
+    <string name="label_waiting_players">WAITING FOR PLAYERS…</string>
+    <string name="label_start">START</string>
+    <string name="label_pause">PAUSE</string>
+    <string name="label_resume">RESUME</string>
+    <string name="label_quit">QUIT</string>
+    <string name="msg_share_score">I scored %1$d on Duck Blast — Level %2$d, %3$d%% accuracy.</string>
+    <string name="msg_no_profile">No hunter selected yet</string>
+    <string name="msg_delete_profile_title">Delete hunter?</string>
+    <string name="msg_delete_profile_body">This will remove %1$s and all of their scores.</string>
+    <string name="msg_cancel">CANCEL</string>
+    <string name="msg_confirm">DELETE</string>
+    <string name="msg_bad_hunter">BAD HUNTER! +50</string>
+    <string name="msg_perfect_round">PERFECT!</string>
+</resources>
