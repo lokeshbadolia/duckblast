@@ -1,0 +1,957 @@
+You are an expert Android developer. Build a complete Duck Hunt tribute game 
+called "DUCK BLAST" for Android only. This is a brand new project — do not 
+reference any previous codebase.
+
+THE SINGLE MOST IMPORTANT REQUIREMENT: This game must look, feel, sound, and 
+play EXACTLY like the original NES Duck Hunt. Study this reference:
+https://www.retrogames.cz/play_1185-NES.php
+
+---
+
+## PROJECT SETUP
+
+Package: com.duckblast.game
+App name: Duck Blast
+compileSdk = 35
+minSdk = 26
+targetSdk = 35
+Kotlin = 2.0.21
+AGP = 8.7.0
+
+Use:
+- Jetpack Compose (latest BOM 2024.11.00) for all UI screens EXCEPT the game canvas
+- AndroidView inside Compose to embed the game Canvas (SurfaceView)
+- Koin 4.0.0 for dependency injection
+- ObjectBox 4.0.0 for local storage
+- Navigation Compose for screen routing
+- ViewModel + StateFlow for all screen state
+- Coroutines for async work
+- VibrationEffect for haptics
+- AudioTrack API for synthesized sounds
+- SoundPool for short SFX playback
+- Portrait orientation locked — all screens
+
+libs.versions.toml (use version catalog):
+```toml
+[versions]
+kotlin = "2.0.21"
+agp = "8.7.0"
+compose-bom = "2024.11.00"
+koin = "4.0.0"
+objectbox = "4.0.0"
+coroutines = "1.9.0"
+lifecycle = "2.8.7"
+navigation = "2.8.4"
+activity = "1.9.3"
+core-ktx = "1.15.0"
+serialization = "1.7.3"
+
+[libraries]
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
+compose-animation = { group = "androidx.compose.animation", name = "animation" }
+compose-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }
+```
+
+---
+
+## COMPLETE FOLDER STRUCTURE
+
+DuckBlast/
+├── app/
+│   ├── src/main/
+│   │   ├── java/com/duckblast/game/
+│   │   │   ├── DuckBlastApp.kt
+│   │   │   ├── MainActivity.kt
+│   │   │   ├── di/
+│   │   │   │   ├── AppModule.kt
+│   │   │   │   ├── GameModule.kt
+│   │   │   │   └── StorageModule.kt
+│   │   │   ├── data/
+│   │   │   │   ├── model/
+│   │   │   │   │   ├── Profile.kt            # ObjectBox entity
+│   │   │   │   │   └── GameRecord.kt         # ObjectBox entity
+│   │   │   │   ├── repository/
+│   │   │   │   │   ├── ProfileRepository.kt
+│   │   │   │   │   └── GameRecordRepository.kt
+│   │   │   │   └── ObjectBoxStore.kt
+│   │   │   ├── game/
+│   │   │   │   ├── engine/
+│   │   │   │   │   ├── GameEngine.kt
+│   │   │   │   │   ├── GameLoop.kt
+│   │   │   │   │   ├── GameState.kt
+│   │   │   │   │   └── CollisionDetector.kt
+│   │   │   │   ├── entities/
+│   │   │   │   │   ├── Duck.kt
+│   │   │   │   │   ├── Plate.kt
+│   │   │   │   │   ├── Target.kt             # sealed class
+│   │   │   │   │   ├── Crosshair.kt
+│   │   │   │   │   ├── Gun.kt
+│   │   │   │   │   └── DuckDog.kt
+│   │   │   │   ├── level/
+│   │   │   │   │   ├── LevelConfig.kt
+│   │   │   │   │   ├── LevelManager.kt
+│   │   │   │   │   └── LevelProgressionTable.kt
+│   │   │   │   ├── scoring/
+│   │   │   │   │   ├── ScoreSystem.kt
+│   │   │   │   │   └── BonusCalculator.kt
+│   │   │   │   └── renderer/
+│   │   │   │       ├── GameRenderer.kt
+│   │   │   │       ├── SpriteManager.kt
+│   │   │   │       ├── BackgroundRenderer.kt
+│   │   │   │       ├── DuckRenderer.kt
+│   │   │   │       ├── CrosshairRenderer.kt
+│   │   │   │       ├── GunRenderer.kt
+│   │   │   │       ├── HudRenderer.kt
+│   │   │   │       └── ParticleRenderer.kt
+│   │   │   ├── audio/
+│   │   │   │   ├── SoundManager.kt
+│   │   │   │   ├── SoundSynthesizer.kt
+│   │   │   │   └── SoundId.kt
+│   │   │   ├── haptics/
+│   │   │   │   └── VibrationManager.kt
+│   │   │   ├── multiplayer/
+│   │   │   │   ├── LanDiscovery.kt
+│   │   │   │   ├── GameServer.kt
+│   │   │   │   ├── GameClient.kt
+│   │   │   │   ├── MultiplayerManager.kt
+│   │   │   │   └── MultiplayerMessage.kt     # kotlinx.serialization
+│   │   │   └── ui/
+│   │   │       ├── navigation/
+│   │   │       │   ├── NavGraph.kt
+│   │   │       │   └── Screen.kt             # sealed class routes
+│   │   │       ├── theme/
+│   │   │       │   ├── Theme.kt
+│   │   │       │   ├── Color.kt
+│   │   │       │   └── Type.kt
+│   │   │       ├── splash/
+│   │   │       │   └── SplashScreen.kt
+│   │   │       ├── profile/
+│   │   │       │   ├── ProfileScreen.kt
+│   │   │       │   └── ProfileViewModel.kt
+│   │   │       ├── menu/
+│   │   │       │   ├── MenuScreen.kt
+│   │   │       │   └── MenuViewModel.kt
+│   │   │       ├── game/
+│   │   │       │   ├── GameScreen.kt
+│   │   │       │   ├── GameViewModel.kt
+│   │   │       │   └── GameSurfaceView.kt
+│   │   │       ├── gameover/
+│   │   │       │   ├── GameOverScreen.kt
+│   │   │       │   └── GameOverViewModel.kt
+│   │   │       ├── scoreboard/
+│   │   │       │   ├── ScoreboardScreen.kt
+│   │   │       │   └── ScoreboardViewModel.kt
+│   │   │       └── multiplayer/
+│   │   │           ├── LobbyScreen.kt
+│   │   │           ├── LobbyViewModel.kt
+│   │   │           └── MultiplayerOverlay.kt
+│   │   ├── res/
+│   │   │   ├── drawable/
+│   │   │   │   ├── ic_duck_fly_1.xml         # vector frame 1
+│   │   │   │   ├── ic_duck_fly_2.xml         # vector frame 2
+│   │   │   │   ├── ic_duck_fly_3.xml         # vector frame 3
+│   │   │   │   ├── ic_duck_fall.xml          # shot duck falling
+│   │   │   │   ├── ic_duck_escape.xml        # duck escaping top
+│   │   │   │   ├── ic_plate_1.xml            # clay pigeon intact
+│   │   │   │   ├── ic_plate_break_1.xml      # plate shard 1
+│   │   │   │   ├── ic_plate_break_2.xml      # plate shard 2
+│   │   │   │   ├── ic_crosshair.xml          # round crosshair
+│   │   │   │   ├── ic_gun.xml                # side-view gun
+│   │   │   │   ├── ic_dog_sniff.xml          # dog sniffing grass
+│   │   │   │   ├── ic_dog_laugh.xml          # dog laughing (miss)
+│   │   │   │   ├── ic_dog_carry.xml          # dog carrying duck
+│   │   │   │   ├── bg_sky.xml                # gradient sky
+│   │   │   │   ├── bg_grass.xml              # grass strip
+│   │   │   │   ├── bg_bush.xml               # foreground bushes
+│   │   │   │   └── bg_trees.xml              # background trees
+│   │   │   ├── values/
+│   │   │   │   ├── colors.xml
+│   │   │   │   ├── strings.xml
+│   │   │   │   └── themes.xml
+│   │   │   └── font/
+│   │   │       └── press_start_2p.ttf        # pixel font — download from Google Fonts
+│   │   └── AndroidManifest.xml
+├── build.gradle.kts
+├── settings.gradle.kts
+└── gradle/libs.versions.toml
+
+---
+
+## VISUAL STYLE — PIXEL-PERFECT DUCK HUNT RECREATION
+
+### Color Palette (exact NES Duck Hunt colors):
+```xml
+<!-- colors.xml -->
+<color name="sky_top">#5C94FC</color>          <!-- NES blue sky -->
+<color name="sky_bottom">#A8D8EA</color>
+<color name="grass_dark">#009900</color>
+<color name="grass_light">#00CC00</color>
+<color name="ground_brown">#884400</color>
+<color name="bush_green">#006600</color>
+<color name="tree_dark">#003300</color>
+<color name="duck_brown">#884400</color>
+<color name="duck_green">#007700</color>
+<color name="duck_white">#FFFFFF</color>
+<color name="crosshair_white">#FFFFFF</color>
+<color name="crosshair_dark">#000033</color>
+<color name="hud_bg">#000033</color>
+<color name="hud_text">#FFFFFF</color>
+<color name="score_yellow">#FCFC00</color>
+<color name="hit_flash">#FFFFFF</color>
+```
+
+### Pixel Font:
+Download "Press Start 2P" from Google Fonts (OFL license, free).
+Place in res/font/press_start_2p.ttf
+Use for ALL text in the game — HUD score, level number, ammo count, 
+all Compose UI screens, menus, everything.
+
+### Background (BackgroundRenderer.kt — draw on Canvas):
+Layer 1 (bottom): sky gradient from sky_top to sky_bottom, full screen
+Layer 2: distant tree silhouettes drawn as filled rectangles at ~60% screen height
+Layer 3: rolling hills — two filled arcs/ovals at ~70% screen height, grass_dark
+Layer 4: foreground grass strip — solid rectangle at 78-85% screen height, grass_light
+Layer 5: bush clusters — irregular filled circles in groups at grass line
+Layer 6: ground strip — solid rectangle at 85-100%, ground_brown
+All layers drawn with pixel-aligned coordinates. No anti-aliasing on background.
+Paint.isAntiAlias = false for all background elements to preserve pixel look.
+
+---
+
+## SPRITE SYSTEM (SpriteManager.kt + vector drawables)
+
+Draw ALL sprites as Vector Drawable XML files.
+Each sprite must match the NES Duck Hunt pixel art style:
+- Bold outlines
+- Flat colors, no gradients inside sprites
+- Chunky pixel-art proportions
+
+### Duck sprite (ic_duck_fly_1/2/3.xml):
+3-frame wing flap animation. Duck body = brown oval, wing = darker brown 
+rectangle that rotates -30°/0°/+30° between frames. Head = small circle 
+with orange beak. White chest patch. Green head on mallard variant.
+Size: 48x40dp in vector viewBox.
+
+### Duck animation states:
+- FLYING: cycle frames 1→2→3→2→1 every 120ms
+- HIT_FLASH: alternate white fill / normal fill 3 times over 300ms
+- FALLING: use ic_duck_fall.xml — duck rotated 90° with X eyes, falls straight down
+- ESCAPED: use ic_duck_escape.xml — duck flies straight up off screen
+
+### Plate sprite:
+ic_plate_1.xml: orange-brown circle (clay pigeon), diameter 32dp
+ic_plate_break_1.xml and ic_plate_break_2.xml: two half-circle shards 
+that fly apart in opposite directions when shot
+
+### Crosshair (ic_crosshair.xml):
+Classic duck hunt crosshair: outer circle, inner dot, four perpendicular 
+lines. Color: white with dark outline. Size 64x64dp.
+Rendered LAST (on top of everything).
+
+### Dog sprites:
+ic_dog_sniff.xml: beagle dog, low to ground, nose forward (intro animation)
+ic_dog_carry.xml: dog jumping up holding duck in mouth (successful round)
+ic_dog_laugh.xml: dog peering over grass laughing (missed all ducks)
+These appear in the grass strip area only.
+
+---
+
+## GAME MECHANICS — EXACT DUCK HUNT RULES
+
+### Crosshair Control:
+- User DRAGS finger anywhere on screen to move the crosshair
+- Crosshair follows finger 1:1 — no acceleration, no lag
+- Crosshair clamped to screen bounds minus 32dp padding
+- When finger lifts: SHOOT action fires at current crosshair position
+- Crosshair can be moved WHILE finger is held — lift = shoot
+- Gun sprite at bottom of screen rotates to point toward current crosshair position
+  Use: angle = atan2(crosshairY - gunY, crosshairX - gunX) converted to degrees
+  Apply rotation to gun drawable using canvas.rotate()
+
+### Gun (GunRenderer.kt + Gun.kt):
+- Drawn at bottom-center of screen, above HUD
+- Width: 80dp, positioned at (screenWidth/2, screenHeight - 120dp)
+- Rotates smoothly toward crosshair using angle lerp: 
+  currentAngle += (targetAngle - currentAngle) * 0.25f each frame
+- On SHOOT: gun recoil animation — translate gun backward 8dp over 80ms, 
+  return over 120ms
+- Muzzle flash: white circle at gun barrel tip, visible for 2 frames (33ms)
+
+### Shooting Logic:
+- User has exactly 3 shots per round (shown as bullet icons in HUD)
+- On finger lift → decrement ammo → check hit detection → play sound + vibrate
+- Hit detection: circle collision — if crosshair center is within 
+  (duck/plate radius + 20dp) → HIT
+- The 20dp bonus makes it feel fair like the original light gun
+- On HIT: target enters HIT_FLASH state → then FALLING state → 
+  dog carries it → score added
+- On MISS: bullet deducted, no target reaction
+- If all 3 shots used and targets remain → targets ESCAPE 
+  (fly off top of screen) → dog laughs
+
+### Round Structure (LevelManager.kt):
+Each level = one round. Within a level:
+- DUCK MODE: 2 ducks fly simultaneously (levels 1-5), or 1 duck (tutorial/easy)
+- PLATE MODE: every 3rd level → throw clay plates instead of ducks
+- Round starts → dog jumps in grass (1.5s animation) → ducks/plates launch
+
+### Duck flight path (Duck.kt):
+- Ducks enter from a random edge (left or right of screen, or bottom-left/right)
+- Fly in a zigzag arc path: primary direction + perpendicular sine wave
+- Path is defined by: startPos, primaryVelocity, sineAmplitude, sineFrequency
+- Speed increases each level: baseSpeed = 120dp/s + (level * 15dp/s), capped at 400dp/s
+- If duck reaches top of screen without being shot → ESCAPED
+- Ducks never fly off left/right edges — they bounce off screen sides
+
+### Plate flight path (Plate.kt):
+- Plate launches from bottom-left or bottom-right corner
+- Follows a parabolic arc (projectile physics): 
+  vx = constant, vy = initial upward - gravity accumulation each frame
+- Plate rotates continuously during flight (visualRotation += 8f per frame)
+- Plate explodes into two shards when hit
+- Shards fly apart with opposite velocities and fade out over 400ms
+
+---
+
+## LEVEL PROGRESSION TABLE (LevelProgressionTable.kt)
+
+```kotlin
+data class LevelConfig(
+    val level: Int,
+    val mode: GameMode,           // DUCK or PLATE
+    val ducksPerRound: Int,       // 1 or 2
+    val duckSpeed: Float,         // dp per second
+    val shotsPerRound: Int,       // always 3 in classic mode
+    val ducksToPass: Int,         // how many must be hit to advance
+    val pointsPerDuck: Int,
+    val bonusPoints: Int,         // for perfect round (all hit)
+    val timePerDuck: Float        // seconds before duck escapes, decreases per level
+)
+
+// Define levels 1 through 30:
+// Levels 1-3: 1 duck, slow (140dp/s), 5s per duck, pass if hit 2/3
+// Levels 4-6: 2 ducks, medium (200dp/s), 4.5s, pass if hit 3/6
+// Levels 7-10: 2 ducks, faster (260dp/s), 4s, pass if hit 4/6
+// Level 3, 6, 9 etc: PLATE mode instead
+// Levels 11-20: same pattern, speed increases 20dp/s per 3 levels
+// Levels 21-30: max speed (400dp/s), 2.5s per duck, must hit 5/6
+// Level 30+: loop back to level 21 config, speed stays maxed — infinite loop
+```
+
+---
+
+## HUD LAYOUT (HudRenderer.kt — drawn on Canvas)
+
+Bottom strip (last 15% of screen height), background: hud_bg (#000033)
+Using Press Start 2P font throughout.
+
+Left section:
+- "SCORE" label (small, white)
+- Current score number below it (yellow, large)
+
+Center section:
+- Duck/plate hit count this round: filled duck icons for hits, empty for misses
+  Draw small duck silhouettes (12dp each) in a row, filled=white, empty=outline
+
+Right section:
+- "LEVEL" label (small, white)  
+- Level number (yellow, large)
+
+Below score on left:
+- Ammo: 3 bullet icons (8dp each). Filled = remaining shots. 
+  Remove one (make it hollow) with each shot.
+
+Top strip (first 6% of screen height), semi-transparent dark bg:
+- High score: "HI-SCORE XXXXX" centered, small white text
+
+---
+
+## SOUND SYSTEM (SoundSynthesizer.kt + SoundManager.kt)
+
+Generate ALL sounds programmatically using AudioTrack. 
+No external audio files needed.
+
+### SoundId.kt:
+```kotlin
+enum class SoundId {
+    GUNSHOT,
+    DUCK_QUACK,
+    DUCK_FALL,
+    DUCK_ESCAPED,
+    DOG_LAUGH,
+    DOG_BARK,
+    PLATE_LAUNCH,
+    PLATE_BREAK,
+    ROUND_START,
+    LEVEL_CLEAR,
+    GAME_OVER,
+    MENU_SELECT,
+    SCORE_TICK,
+    PERFECT_ROUND
+}
+```
+
+### SoundSynthesizer.kt — generate each sound:
+
+GUNSHOT: 
+Sharp noise burst. White noise at full amplitude for 15ms, 
+then exponential decay to silence over 120ms.
+Add low-frequency thump: sine wave at 80Hz, 60ms, fast decay.
+Mix together: 60% noise + 40% thump.
+
+DUCK_QUACK:
+Two-tone warble. Alternate between 400Hz and 500Hz sine wave, 
+switching every 40ms, total 200ms. Apply slight vibrato (±20Hz at 8Hz rate).
+Amplitude envelope: quick attack 10ms, sustain, quick decay 30ms.
+
+DUCK_FALL:
+Descending whistle. Sine wave from 800Hz → 200Hz over 600ms.
+Add slight wobble (±30Hz sine modulation at 12Hz).
+
+DUCK_ESCAPED:
+Ascending whistle. Sine wave from 300Hz → 1200Hz over 400ms. 
+Fade out over last 100ms.
+
+DOG_LAUGH:
+Three short "heh" sounds. Each: burst of 300Hz sine, 80ms, 
+with sharp attack and decay. Gap of 100ms between each.
+
+DOG_BARK:
+Noise burst 30ms + 180Hz sine 80ms. Quick and punchy.
+
+PLATE_LAUNCH:
+Rising whoosh. Noise filtered to low frequencies, 
+amplitude ramps up from 0 to peak over 200ms.
+
+PLATE_BREAK:
+Short crack. High-frequency noise (5kHz region) burst 25ms + 
+noise decay 80ms. Sounds like ceramic breaking.
+
+ROUND_START:
+Simple 3-note ascending arpeggio: 262Hz, 330Hz, 392Hz (C-E-G).
+Each note 150ms, sine wave, slight fade out at end of each.
+
+LEVEL_CLEAR:
+5-note ascending melody: 262, 294, 330, 349, 392 Hz.
+Each note 120ms, square wave (more NES-sounding):
+square wave = if (sin(angle) > 0) amplitude else -amplitude
+
+GAME_OVER:
+Descending 4-note phrase: 392, 330, 294, 262 Hz.
+Each 180ms, square wave, slight echo effect 
+(add delayed copy at 30% amplitude after 120ms).
+
+PERFECT_ROUND:
+Jingle: 523, 659, 784, 1047 Hz, each 100ms, sine wave.
+Followed by a trill between 784 and 880 Hz alternating every 30ms for 300ms.
+
+SCORE_TICK:
+Very short tick: 800Hz sine, 20ms, full amplitude then instant cut.
+
+MENU_SELECT:
+Short blip: 440Hz sine, 40ms, quick fade.
+
+### SoundManager.kt:
+- Pre-generate all sounds on app start using coroutines (IO dispatcher)
+- Store as ShortArray in memory map: Map<SoundId, ShortArray>
+- Playback: for each play() call, submit to a single-thread executor
+  that creates an AudioTrack, writes the ShortArray, plays, releases
+- Max 4 simultaneous sounds (use 4 AudioTrack instances in a pool)
+- Volume control: master volume Float, applied per sound
+- SoundManager is a singleton injected via Koin
+
+---
+
+## VIBRATION (VibrationManager.kt)
+
+Use VibrationEffect for Android 26+.
+
+```kotlin
+enum class VibrationType {
+    GUNSHOT,      // sharp 40ms
+    HIT_TARGET,   // double tap: 20ms pause 20ms 20ms  
+    MISS,         // nothing (no vibration on miss — feels right)
+    DOG_APPEAR,   // gentle 60ms
+    LEVEL_CLEAR,  // pattern: 30ms pause 30ms pause 60ms
+    GAME_OVER     // long 200ms
+}
+```
+
+---
+
+## DATA LAYER — OBJECTBOX
+
+### Profile.kt:
+```kotlin
+@Entity
+data class Profile(
+    @Id var id: Long = 0,
+    var name: String = "",
+    var avatarColorHex: String = "#FF6B6B",
+    var highScore: Long = 0,
+    var totalDucksHit: Int = 0,
+    var totalShotsFired: Int = 0,
+    var totalGamesPlayed: Int = 0,
+    var highestLevelReached: Int = 0,
+    var createdAt: Long = System.currentTimeMillis(),
+    var lastPlayedAt: Long = 0,
+    var streakDays: Int = 0,
+    var lastPlayedDate: String = ""
+)
+```
+
+### GameRecord.kt:
+```kotlin
+@Entity
+data class GameRecord(
+    @Id var id: Long = 0,
+    var profileId: Long = 0,
+    var score: Long = 0,
+    var levelReached: Int = 0,
+    var ducksHit: Int = 0,
+    var shotsFired: Int = 0,
+    var accuracy: Float = 0f,   // ducksHit / shotsFired
+    var playedAt: Long = System.currentTimeMillis(),
+    var durationSeconds: Int = 0,
+    var isPerfectGame: Boolean = false
+)
+```
+
+### ObjectBoxStore.kt:
+```kotlin
+object ObjectBoxStore {
+    lateinit var store: BoxStore
+    
+    fun init(context: Context) {
+        store = MyObjectBox.builder()
+            .androidContext(context)
+            .build()
+    }
+}
+```
+
+### ProfileRepository.kt:
+Implement:
+- getAllProfiles(): List<Profile>
+- getProfileById(id: Long): Profile?
+- saveProfile(profile: Profile): Long
+- deleteProfile(id: Long)
+- updateHighScore(id: Long, score: Long)
+- updateStats(id: Long, ducksHit: Int, shotsFired: Int)
+- getSelectedProfileId(): Long  (SharedPreferences)
+- setSelectedProfileId(id: Long)
+- updateStreak(id: Long)
+
+### GameRecordRepository.kt:
+Implement:
+- insertRecord(record: GameRecord)
+- getRecordsForProfile(profileId: Long): List<GameRecord>
+- getTopScores(limit: Int = 20): List<GameRecord>
+- getGlobalLeaderboard(): List<Pair<Profile, GameRecord>>
+
+---
+
+## DEPENDENCY INJECTION — KOIN
+
+### AppModule.kt:
+```kotlin
+val appModule = module {
+    single { ObjectBoxStore.store.boxFor(Profile::class.java) }
+    single { ObjectBoxStore.store.boxFor(GameRecord::class.java) }
+    single { ProfileRepository(get(), get()) }
+    single { GameRecordRepository(get(), get()) }
+    single { SoundManager(get()) }
+    single { VibrationManager(get()) }
+    single { MultiplayerManager() }
+}
+
+val gameModule = module {
+    factory { GameEngine(get(), get()) }
+    factory { LevelManager() }
+    factory { ScoreSystem() }
+}
+
+val viewModelModule = module {
+    viewModel { ProfileViewModel(get()) }
+    viewModel { MenuViewModel(get(), get()) }
+    viewModel { GameViewModel(get(), get(), get(), get(), get()) }
+    viewModel { GameOverViewModel(get(), get()) }
+    viewModel { ScoreboardViewModel(get()) }
+    viewModel { LobbyViewModel(get()) }
+}
+```
+
+---
+
+## COMPOSE UI SCREENS
+
+### Global Theme (light mode only):
+```kotlin
+// Color.kt
+val DuckBlastBackground = Color(0xFF5C94FC)   // sky blue
+val DuckBlastSurface = Color(0xFFFFFFFF)
+val DuckBlastPrimary = Color(0xFF884400)      // duck brown
+val DuckBlastSecondary = Color(0xFF009900)    // grass green
+val DuckBlastAccent = Color(0xFFFCFC00)       // NES yellow
+val DuckBlastText = Color(0xFF000033)         // NES dark
+val DuckBlastHud = Color(0xFF000033)
+```
+
+Force light mode — no dark theme. In themes.xml: 
+```xml
+<style name="Theme.DuckBlast" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:forceDarkAllowed">false</item>
+</style>
+```
+
+### SplashScreen.kt (Compose):
+- Sky blue full screen background
+- Animated duck flying across screen (use animated vector or manual Canvas)
+- "DUCK BLAST" title in Press Start 2P font, centered, duck brown color
+- Subtitle: "A Duck Hunt Tribute" smaller below
+- After 2s: check SharedPreferences for selected profile ID
+  → if found: navigate to Menu
+  → if not found: navigate to Profile screen
+
+### ProfileScreen.kt (Compose):
+- Sky blue background
+- Title "SELECT HUNTER" in pixel font
+- LazyColumn of profile cards:
+  Each card: rounded rectangle, white background with brown border
+  Shows: colored circle avatar (initial letter), name, high score, 
+  accuracy %, games played
+  Tap card → select profile → navigate to Menu
+- "NEW HUNTER" button at bottom: opens AlertDialog with TextField for name
+  On confirm: create profile, select it, navigate to Menu
+- Long press card → delete confirmation dialog
+- Selected profile gets a checkmark + golden border
+
+### MenuScreen.kt (Compose):
+- Sky background with scrolling trees (use infinite transition for parallax)
+- Player card at top: avatar + name + high score + streak badge ("🔥 3 days")
+- Large "PLAY" button (duck brown, pixel font)
+- "MULTIPLAYER" button
+- "SCOREBOARD" button  
+- "CHANGE HUNTER" button
+- Each button: press scale animation (0.93f on press, spring back)
+- Dog peek animation at bottom of screen (dog appears and disappears)
+
+### GameScreen.kt (Compose wrapper):
+```kotlin
+@Composable
+fun GameScreen(viewModel: GameViewModel) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // AndroidView embedding SurfaceView for game canvas
+        AndroidView(
+            factory = { context ->
+                GameSurfaceView(context, viewModel)
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+        // Pause button overlay (top-right corner)
+        PauseButton(
+            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+            onPause = { viewModel.togglePause() }
+        )
+        // Multiplayer score overlay (if in multiplayer mode)
+        if (viewModel.isMultiplayer) {
+            MultiplayerOverlay(
+                modifier = Modifier.align(Alignment.TopStart),
+                players = viewModel.multiplayerPlayers
+            )
+        }
+    }
+}
+```
+
+### GameOverScreen.kt (Compose):
+- Same sky background
+- "GAME OVER" in large pixel font, red color, scale-bounce animation in
+- Score count-up animation: number ticks up from 0 to final score over 1.5s
+- Show: YOUR SCORE, BEST SCORE, LEVEL REACHED, DUCKS HIT, ACCURACY %
+- If new high score: "NEW RECORD!" badge animates in with golden glow
+- Dog laugh animation plays (animated vector)
+- "PLAY AGAIN" and "MAIN MENU" buttons
+- Share score button (Android share intent)
+
+### ScoreboardScreen.kt (Compose):
+- Title "HALL OF FAME" in pixel font
+- LazyColumn: top 20 scores across ALL profiles
+- Each entry: rank number, avatar, player name, score, level, accuracy, date
+- Rank 1: gold color, Rank 2: silver, Rank 3: bronze
+- Current profile entries highlighted with duck-brown background
+
+---
+
+## GAME FLOW IMPLEMENTATION
+
+### GameEngine.kt:
+States (sealed class):
+- Idle
+- DogIntro (dog sniff animation, 1.5s)
+- DuckLaunch (ducks appear from grass)
+- Playing (active gameplay)
+- RoundResult (show hits/misses, dog reaction, 2.5s)
+- LevelClear (level complete celebration)
+- GameOver
+
+State machine transitions:
+Idle → DogIntro → DuckLaunch → Playing → RoundResult → 
+  if rounds_left > 0: DuckLaunch
+  else if passed: LevelClear → next level → DogIntro
+  else: GameOver
+
+### GameLoop.kt:
+- Fixed timestep: 16.67ms (60 FPS)
+- Thread-based loop on dedicated HandlerThread
+- Canvas locked in SurfaceHolder.lockHardwareCanvas() / unlockCanvasAndPost()
+- Delta time capped at 50ms
+- update(dt) → render() each frame
+- Thread stops cleanly on surfaceDestroyed()
+
+### Touch handling (GameSurfaceView.kt):
+```kotlin
+override fun onTouchEvent(event: MotionEvent): Boolean {
+    when (event.actionMasked) {
+        MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+            // Update crosshair position — track finger 1:1
+            gameEngine.updateCrosshair(event.x, event.y)
+        }
+        MotionEvent.ACTION_UP -> {
+            // Finger lifted = SHOOT at current crosshair position
+            gameEngine.shoot(event.x, event.y)
+        }
+    }
+    return true
+}
+```
+
+---
+
+## LAN MULTIPLAYER
+
+### How it works:
+Same-WiFi competitive play. Each player plays their own game.
+Live scores shown in overlay. Highest score at end wins.
+
+### LanDiscovery.kt:
+- UDP multicast group: 239.255.12.99 port 47777
+- Heartbeat every 1s: JSON {"action":"HELLO","name":"PlayerName","ip":"...","profileId":"..."}
+- Evict players not seen in 5s
+- Acquire WifiManager.MulticastLock before joining group
+- Release lock in onDestroy
+
+### MultiplayerMessage.kt (kotlinx.serialization):
+```kotlin
+@Serializable
+sealed class MultiplayerMessage {
+    @Serializable data class Hello(val name: String, val profileId: Long, val ip: String) : MultiplayerMessage()
+    @Serializable data class StartGame(val seed: Long) : MultiplayerMessage()  // same seed = same duck patterns
+    @Serializable data class ScoreUpdate(val profileId: Long, val score: Long, val level: Int, val isAlive: Boolean) : MultiplayerMessage()
+    @Serializable data class GameEnd(val profileId: Long, val finalScore: Long) : MultiplayerMessage()
+}
+```
+
+### LobbyScreen.kt (Compose):
+- Shows discovered players on network as cards (auto-refresh)
+- "HOST GAME" button → become server, show lobby list, wait for others
+- Tap discovered host → join their lobby
+- Host sees connected players, "START" button enabled when ≥1 other player
+- On START: server sends StartGame message with random seed
+  All devices start game simultaneously after 3-2-1 countdown
+
+### During multiplayer game:
+- Semi-transparent overlay top-left: small cards per player, showing name + live score
+- Player's own game runs normally
+- Score sync via UDP every 500ms
+- When all players are dead: show final multiplayer rankings screen
+
+---
+
+## COMPLETE GAME SCREEN FLOW
+
+1. App launch → SplashScreen (2s) → check profile
+2. No profile → ProfileScreen → create profile → MenuScreen
+3. Has profile → MenuScreen directly
+4. MenuScreen → tap PLAY → GameScreen (single player)
+5. MenuScreen → tap MULTIPLAYER → LobbyScreen → GameScreen (multiplayer)
+6. GameScreen → game over → GameOverScreen
+7. GameOverScreen → PLAY AGAIN → GameScreen (new game same profile)
+8. GameOverScreen → MAIN MENU → MenuScreen
+9. MenuScreen → SCOREBOARD → ScoreboardScreen → back → MenuScreen
+10. MenuScreen → CHANGE HUNTER → ProfileScreen
+
+---
+
+## ANIMATION SEQUENCES
+
+### Dog Intro Sequence (DogIntro state, 1.5s):
+0ms: dog sprite appears running from left edge at grass level
+400ms: dog stops at center, sniffs ground (ic_dog_sniff.xml)
+800ms: dog jumps straight up (translate Y upward 40dp over 200ms)
+1000ms: dog disappears below grass (translate Y down off screen)
+1200ms: ducks launch
+
+### Dog Success Sequence (hit all ducks, 2s):
+Dog jumps up from grass holding duck (ic_dog_carry.xml), 
+bounces up 60dp then settles, stays visible 1.5s, 
+bark sound plays, drops back down.
+
+### Dog Laugh Sequence (missed all ducks, 2.5s):
+Dog peeks up from grass (ic_dog_laugh.xml), 
+bob up and down slightly,
+dog_laugh sound plays,
+player CANNOT tap dog (but many will try — add a fun Easter egg: 
+if player shoots at dog → dog flinches with a yelp sound and extra 
+50 bonus points, screen shows "BAD HUNTER! +50")
+
+### Duck Hit Sequence:
+Frame 0: HIT detected
+Frames 1-6: duck flashes white (alternate fill colors every 2 frames, 100ms total)
+Frame 7: duck switches to ic_duck_fall.xml
+Frames 8-40: duck falls straight down, slight rotation
+When duck exits bottom of screen: dog carry sequence begins
+Score number pops up at duck's last position, floats upward, fades out (1s)
+
+### Duck Escape Sequence:
+All shots used, duck still alive:
+Duck immediately changes direction to fly straight up
+Speed doubles
+duck_escaped sound plays
+Duck exits top of screen
+If BOTH ducks escape → dog laughs
+
+---
+
+## IMPLEMENTATION ORDER
+
+STEP 1: Project setup
+- Create all folders and files
+- Configure build.gradle.kts with all dependencies
+- Set up libs.versions.toml
+- Configure AndroidManifest.xml (permissions, portrait lock, hardware accel)
+- Set up ObjectBoxStore and init in Application class
+- Set up Koin modules
+- Download Press Start 2P font and place in res/font/
+
+STEP 2: Data layer
+- Implement Profile and GameRecord ObjectBox entities
+- Implement ProfileRepository and GameRecordRepository
+- Test that ObjectBox generates correctly
+
+STEP 3: Theme + Navigation
+- Implement Color.kt, Theme.kt, Type.kt (Press Start 2P font)
+- Implement Screen.kt sealed class routes
+- Implement NavGraph.kt with all routes
+- Set up MainActivity with NavHost
+
+STEP 4: Profile + Splash screens
+- SplashScreen with duck animation
+- ProfileScreen with create/select/delete
+
+STEP 5: Menu screen
+- MenuScreen with all buttons and animations
+- MenuViewModel
+
+STEP 6: Sound system
+- SoundSynthesizer — generate all 14 sounds using AudioTrack
+- SoundManager with playback pool
+
+STEP 7: Vibration
+- VibrationManager with all vibration types
+
+STEP 8: Game engine core
+- GameState sealed class
+- GameEngine state machine
+- GameLoop fixed timestep
+- Duck, Plate, Target, Crosshair, Gun entities
+- LevelManager + LevelProgressionTable (30 levels)
+- ScoreSystem + BonusCalculator
+- CollisionDetector
+
+STEP 9: Rendering
+- SpriteManager — load all vector drawables as Bitmaps
+- BackgroundRenderer — layered NES-style background
+- DuckRenderer — sprite animation controller
+- CrosshairRenderer — follows touch position
+- GunRenderer — rotation toward crosshair + recoil
+- HudRenderer — score, ammo, level in pixel font
+- ParticleRenderer — score popups, hit flash
+- GameRenderer — orchestrates all sub-renderers
+
+STEP 10: GameSurfaceView + GameScreen
+- GameSurfaceView with touch handling
+- Wire to GameEngine
+- GameScreen Compose wrapper with AndroidView
+
+STEP 11: Game Over + Scoreboard
+- GameOverScreen with all animations
+- ScoreboardScreen
+- Wire up ObjectBox record saving
+
+STEP 12: LAN Multiplayer
+- LanDiscovery (UDP multicast)
+- GameServer + GameClient (TCP lobby + UDP score sync)
+- MultiplayerManager
+- LobbyScreen + LobbyViewModel
+- MultiplayerOverlay in GameScreen
+
+STEP 13: Polish
+- Dog Easter egg (shoot the dog)
+- Streak system in ProfileRepository
+- Score sharing intent
+- ProGuard rules for ObjectBox
+- Test all flows end to end
+
+---
+
+## CRITICAL RULES
+
+1. Every file must be COMPLETE and COMPILABLE — no stubs, no TODOs left empty
+2. Press Start 2P font used for ALL text everywhere — no exceptions
+3. No dark mode — forceDarkAllowed = false in theme
+4. Portrait only — all Activities and the manifest lock to portrait
+5. Sound plays on every shot, every hit, every miss — no silent moments
+6. Vibration on every shot — makes it feel like a real gun
+7. Dog laugh Easter egg must be implemented — it's iconic
+8. ObjectBox generated code: add objectbox plugin to both root and app build.gradle.kts
+9. Koin startKoin{} called in DuckBlastApp.kt (Application subclass), declared in manifest
+10. All coroutines use proper scopes, cancelled in onCleared() / onDestroy()
+11. SurfaceView game loop thread must stop cleanly on surfaceDestroyed()
+12. Multicast lock acquired before discovery, released on stop
+13. Hardware acceleration enabled in manifest for GameActivity
+14. Release build: minifyEnabled = true, proguard rules added for ObjectBox and Koin
+
+---
+
+## TOKEN CONTINUATION PROTOCOL
+
+If you reach context limit before finishing all steps:
+End your response with exactly:
+"=== CHECKPOINT: Completed up to [STEP NUMBER] — [last filename written] ==="
+
+When user types "Continue from last" resume from that exact checkpoint.
+Never re-output code already written. Pick up mid-file if needed.
+
+Now begin. Start with STEP 1. Write complete production-quality Kotlin 
+for every single file. Do not skip any file.
