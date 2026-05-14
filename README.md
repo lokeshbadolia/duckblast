@@ -1,5 +1,7 @@
 # Duck Blast
 
+![Duck Blast](duckblast.png)
+
 A retro-style duck-shooting game for Android — a love letter to the NES classic. Built with Jetpack Compose, with procedurally synthesized chiptune audio and no asset dependencies for sounds.
 
 ## Highlights
