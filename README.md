@@ -7,6 +7,9 @@ A retro-style duck-shooting game for Android — a love letter to the NES classi
 ## Playstore
 [Download App From Playstore](http://play.google.com/store/apps/details?id=com.duckblast.game)
 
+## Prompt
+[Claude Terminal Prompt](https://github.com/lokeshbadolia/duckblast/blob/main/Claude%20Prompt)
+
 ## Highlights
 
 - **Single-player campaign** with progressive level difficulty, accuracy tracking, and round-clear bonuses.
